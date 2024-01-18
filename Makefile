@@ -1,14 +1,17 @@
 install:
-	pip install -r requirements.txt
+	go mod install
 
 generate:
-	python -m grpc_tools.protoc -I./proto --python_out=./service --pyi_out=./service --grpc_python_out=./service ./proto/*.proto
+	protoc --proto_path=proto proto/*.proto --go_out=. --go-grpc_out=.
+
+build:
+	go build main.go
 
 run:
-	python -W ignore -m jurigged -v app.py
+	go run main.go server
 
 docker-build:
-	docker build -t geoproperty-gpt .
+	docker build -t geoproperty-be .
 
 docker-run:
-	docker run -d --name geoproperty-gpt -p 50051:50051 --env-file .env geoproperty-gpt
+	docker run -d --name -p 3000:3000 --env-file .env geoproperty-be
