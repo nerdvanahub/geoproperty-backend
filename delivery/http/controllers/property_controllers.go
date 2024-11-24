@@ -49,7 +49,6 @@ func (p *PropertyController) Insert(ctx *fiber.Ctx) error {
 
 	data := ctx.FormValue("data")
 	err = json.Unmarshal([]byte(data), &property)
-
 	if err != nil {
 		return ctx.Status(fiber.StatusBadRequest).JSON(domain.Response{
 			Status:  fiber.StatusBadRequest,
@@ -152,7 +151,32 @@ func (p *PropertyController) GetByCenterPoint(ctx *fiber.Ctx) error {
 
 	fmt.Println(param.CenterPoint)
 
-	properties, err := p.PropertyUseCase.GetByPoint(param.CenterPoint)
+	properties, err := p.PropertyUseCase.GetByGeom("point", param.CenterPoint, space.Polygon{})
+
+	if err != nil {
+		return ctx.Status(fiber.StatusBadRequest).JSON(domain.Response{
+			Status:  fiber.StatusBadRequest,
+			Message: err.Error(),
+		})
+	}
+
+	return ctx.Status(fiber.StatusOK).JSON(properties)
+}
+
+// Get By Polygon
+func (p *PropertyController) GetByPolygon(ctx *fiber.Ctx) error {
+	var param struct {
+		Polygon space.Polygon `json:"polygon"`
+	}
+
+	if err := ctx.BodyParser(&param); err != nil {
+		return ctx.Status(fiber.StatusBadRequest).JSON(domain.Response{
+			Status:  fiber.StatusBadRequest,
+			Message: err.Error(),
+		})
+	}
+
+	properties, err := p.PropertyUseCase.GetByGeom("polygon", space.Point{}, param.Polygon)
 
 	if err != nil {
 		return ctx.Status(fiber.StatusBadRequest).JSON(domain.Response{

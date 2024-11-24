@@ -69,6 +69,7 @@ func RegisterRoutes(c *Controllers, ctx *fiber.App) {
 	// Register Property Routes
 	propertyRoutes := v1.Group("/property")
 	propertyRoutes.Post("/point", c.PropertyController.GetByCenterPoint)
+	propertyRoutes.Post("/polygon", c.PropertyController.GetByPolygon)
 	propertyRoutes.Post("/prompt", c.PropertyController.GetByPrompt)
 	propertyRoutes.Get("/:uid", c.PropertyController.GetDetail)
 

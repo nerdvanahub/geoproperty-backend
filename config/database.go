@@ -2,7 +2,6 @@ package config
 
 import (
 	"fmt"
-	"geoproperty_be/domain"
 	"os"
 
 	"gorm.io/driver/postgres"
@@ -23,7 +22,7 @@ func Connect() (*gorm.DB, error) {
 		Logger: logger.Default.LogMode(logger.Info),
 	})
 
-	db.AutoMigrate(&domain.Property[string, string]{}, &domain.PropertyImage{})
+	// db.AutoMigrate(&domain.Property[string, string]{}, &domain.PropertyImage{})
 
 	if err != nil {
 		panic("failed to connect database")

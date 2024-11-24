@@ -2,7 +2,9 @@ package property
 
 import (
 	"context"
+	"fmt"
 	"geoproperty_be/domain"
+	"geoproperty_be/utils"
 
 	query_agent "geoproperty_be/usecase/query_agent"
 
@@ -77,19 +79,39 @@ func (u *UseCase) GetPropertyByPrompt(query string) (*domain.GeoData, error) {
 }
 
 // GetByPoint implements domain.PropertyUsecase.
-func (u *UseCase) GetByPoint(point space.Point) (*domain.GeoData, error) {
-	area, err := u.AreaUseCase.GetAreaByGeom(point)
+func (u *UseCase) GetByGeom(types string, point space.Point, polygon space.Polygon) (*domain.GeoData, error) {
+	var properties *[]domain.Property[string, string]
+	switch types {
+	case "point":
+		area, err := u.AreaUseCase.GetAreaByGeom(point)
 
-	if err != nil {
-		return nil, err
-	}
+		if err != nil {
+			return nil, err
+		}
 
-	properties, err := u.PropertyRepository.Find(map[string]any{
-		"kelurahan": area.Kelurahan,
-	})
+		params := map[string]any{
+			"kelurahan": area.Kelurahan,
+		}
 
-	if err != nil {
-		return nil, err
+		properties, err = u.PropertyRepository.Find(params)
+		if err != nil {
+			return nil, err
+		}
+	case "polygon":
+		fmt.Println(polygon)
+		polygonWkt, err := utils.DecodeGeomWKT(polygon)
+		if err != nil {
+			return nil, err
+		}
+
+		polygonWkt = fmt.Sprintf("SRID=4326;%s", polygonWkt)
+
+		properties, err = u.PropertyRepository.FinByPolygon(polygonWkt.(string))
+		if err != nil {
+			return nil, err
+		}
+	default:
+		return nil, nil
 	}
 
 	var newProperties []domain.Property[space.Point, space.Polygon]

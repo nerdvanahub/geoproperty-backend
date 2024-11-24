@@ -9,7 +9,7 @@ import (
 	"github.com/spatial-go/geoos/space"
 )
 
-type Property[C any | space.Point, G any | space.Polygon] struct {
+type Property[C string | space.Point, G string | space.Polygon] struct {
 	ID              int64           `json:"id" gorm:"primaryKey"`
 	UUID            string          `json:"uuid" gorm:"unique"`
 	UserID          int64           `json:"user_id" gorm:"not null"`
@@ -197,6 +197,7 @@ type PropertyRepository interface {
 	Update(property Property[string, string]) (*Property[string, string], error)
 	Generate(query string) ([]int, error)
 	Delete(uid string) error
+	FinByPolygon(polygon string) (*[]Property[string, string], error)
 }
 
 type PropertyUsecase interface {
@@ -204,6 +205,6 @@ type PropertyUsecase interface {
 	FindDetail(uid string) (*Property[space.Point, space.Polygon], error)
 	Insert(property Property[space.Point, space.Polygon]) (*Property[space.Point, space.Polygon], error)
 	Delete(uid string) error
-	GetByPoint(point space.Point) (*GeoData, error)
+	GetByGeom(types string, point space.Point, polygon space.Polygon) (*GeoData, error)
 	GetPropertyByPrompt(query string) (*GeoData, error)
 }

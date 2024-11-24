@@ -56,6 +56,17 @@ func (*Repository) Update(property domain.Property[string, string]) (*domain.Pro
 	panic("unimplemented")
 }
 
+// FinByPolygon implements domain.PropertyRepository.
+func (r *Repository) FinByPolygon(polygon string) (*[]domain.Property[string, string], error) {
+	var properties []domain.Property[string, string]
+
+	if err := r.DB.Preload(clause.Associations).Where("ST_Intersects(geometry, ?)", polygon).Find(&properties).Error; err != nil {
+		return nil, err
+	}
+
+	return &properties, nil
+}
+
 func NewRepository(db *gorm.DB) domain.PropertyRepository {
 	return &Repository{
 		DB: db,
