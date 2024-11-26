@@ -29,6 +29,14 @@ func (ac *AreaController) CheckOverlaps(c *fiber.Ctx) error {
 		})
 	}
 
+	// Validate Request Body
+	if area.Geom.IsEmpty() {
+		return c.Status(fiber.StatusBadRequest).JSON(domain.Response{
+			Status:  fiber.StatusBadRequest,
+			Message: "Invalid Geometry",
+		})
+	}
+
 	// Check Overlaps
 	overlaps, err := ac.AreaUsecase.Overlaps(area.Geom)
 	if err != nil {

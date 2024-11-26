@@ -52,15 +52,20 @@ func (r *Repository) Insert(property domain.Property[string, string]) (*domain.P
 }
 
 // Update implements domain.PropertyRepository.
-func (*Repository) Update(property domain.Property[string, string]) (*domain.Property[string, string], error) {
-	panic("unimplemented")
+func (r *Repository) Update(property domain.Property[string, string]) (*domain.Property[string, string], error) {
+	// Update Property
+	if err := r.DB.Preload(clause.Associations).Updates(&property).Find(&property).Error; err != nil {
+		return nil, err
+	}
+
+	return &property, nil
 }
 
 // FinByPolygon implements domain.PropertyRepository.
 func (r *Repository) FinByPolygon(polygon string) (*[]domain.Property[string, string], error) {
 	var properties []domain.Property[string, string]
 
-	if err := r.DB.Preload(clause.Associations).Where("ST_Intersects(geometry, ?)", polygon).Find(&properties).Error; err != nil {
+	if err := r.DB.Session(&gorm.Session{FullSaveAssociations: true}).Preload(clause.Associations).Where("ST_Intersects(geometry, ?)", polygon).Find(&properties).Error; err != nil {
 		return nil, err
 	}
 

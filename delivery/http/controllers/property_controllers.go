@@ -72,6 +72,75 @@ func (p *PropertyController) Insert(ctx *fiber.Ctx) error {
 	})
 }
 
+// Insert is a function to insert property.
+func (p *PropertyController) Update(ctx *fiber.Ctx) error {
+	// Form file
+	form, err := ctx.MultipartForm()
+	if err != nil {
+		return ctx.Status(fiber.StatusBadRequest).JSON(domain.Response{
+			Status:  fiber.StatusBadRequest,
+			Message: err.Error(),
+		})
+	}
+
+	context := context.Background()
+	files := form.File["files"]
+	err = p.AssetUseCase.UploadMultipleAsset(context, files)
+	if err != nil {
+		return ctx.Status(fiber.StatusInternalServerError).JSON(domain.Response{
+			Status:  fiber.StatusInternalServerError,
+			Message: err.Error(),
+		})
+	}
+
+	// Get ID
+	uid := ctx.Params("uid")
+	if uid == "" {
+		return ctx.Status(fiber.StatusBadRequest).JSON(domain.Response{
+			Status:  fiber.StatusBadRequest,
+			Message: "invalid uid",
+		})
+	}
+
+	var property domain.Property[space.Point, space.Polygon]
+	property.UUID = uid
+
+	data := ctx.FormValue("data")
+	err = json.Unmarshal([]byte(data), &property)
+	if err != nil {
+		return ctx.Status(fiber.StatusBadRequest).JSON(domain.Response{
+			Status:  fiber.StatusBadRequest,
+			Message: err.Error(),
+		})
+	}
+
+	if len(property.DeletedImage) > 0 {
+		for _, image := range property.DeletedImage {
+			err = p.AssetUseCase.DeleteAsset(context, image)
+			if err != nil {
+				return ctx.Status(fiber.StatusInternalServerError).JSON(domain.Response{
+					Status:  fiber.StatusInternalServerError,
+					Message: err.Error(),
+				})
+			}
+		}
+	}
+
+	newProperty, err := p.PropertyUseCase.Update(property)
+	if err != nil {
+		return ctx.Status(fiber.StatusBadRequest).JSON(domain.Response{
+			Status:  fiber.StatusBadRequest,
+			Message: err.Error(),
+		})
+	}
+
+	return ctx.Status(fiber.StatusOK).JSON(domain.Response{
+		Status:  fiber.StatusOK,
+		Message: "success",
+		Data:    newProperty,
+	})
+}
+
 // Get Detail Property
 func (p *PropertyController) GetDetail(ctx *fiber.Ctx) error {
 	uid := ctx.Params("uid")

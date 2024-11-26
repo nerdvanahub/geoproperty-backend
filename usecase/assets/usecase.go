@@ -58,3 +58,12 @@ func (s *ServiceAssets) UploadMultipleAsset(ctx context.Context, fh []*multipart
 
 	return nil
 }
+
+func (s *ServiceAssets) DeleteAsset(ctx context.Context, fileName string) error {
+	err := s.minioClient.RemoveObject(ctx, config.MinioBucketName, fileName, minio.RemoveObjectOptions{})
+	if err != nil {
+		return err
+	}
+
+	return nil
+}

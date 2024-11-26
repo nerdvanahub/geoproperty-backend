@@ -15,7 +15,7 @@ type Users struct {
 	ID        uint           `gorm:"primarykey"`
 	Name      string         `gorm:"not null" validate:"required"`
 	Email     string         `gorm:"unique;not null" validate:"required,email"`
-	Password  string         `gorm:"not null" validate:"required"`
+	Password  string         `gorm:"not null" validate:"required,min=6"`
 	CreatedAt time.Time      `json:"-"`
 	UpdatedAt time.Time      `json:"-"`
 	DeletedAt gorm.DeletedAt `gorm:"index" json:"-"`
@@ -39,4 +39,5 @@ type UsersUseCase interface {
 	Login(email string, password string) (*Token, error)
 	Register(user *Users) (*Users, error)
 	ExtractTokenGoogle(code string) (string, error)
+	RefreshToken(token string) (*Token, error)
 }

@@ -17,6 +17,61 @@ type UseCase struct {
 	RepositoryUser domain.UsersRepository
 }
 
+// RefreshToken implements domain.UsersUseCase.
+func (u *UseCase) RefreshToken(token string) (*domain.Token, error) {
+	// Extract Token
+	dataClaims, err := utils.ValidateToken(token)
+	if err != nil {
+		return nil, err
+	}
+
+	// Check Expired
+	exp := dataClaims["exp"].(float64)
+	if time.Now().Unix() > int64(exp) {
+		return nil, errors.New("token expired")
+	}
+
+	// Get Detail User from email
+	user, err := u.RepositoryUser.Find(map[string]any{
+		"email": dataClaims["email"].(string),
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	if len(*user) == 0 {
+		return nil, errors.New("user not found")
+	}
+
+	// Generate token
+	param := map[string]any{
+		"id":    (*user)[0].ID,
+		"email": (*user)[0].Email,
+		"name":  (*user)[0].Name,
+		"exp":   time.Now().Add(time.Hour * 24).Unix(),
+	}
+
+	token, err = utils.GenerateToken(param)
+	if err != nil {
+		return nil, err
+	}
+
+	// Refresh Token
+	refreshToken, err := utils.GenerateToken(map[string]any{
+		"email": (*user)[0].Email,
+		"exp":   time.Now().Add(time.Hour * 24 * 7).Unix(),
+	})
+	if err != nil {
+		return nil, errors.New("cannot generate refresh token")
+	}
+
+	// Return Token
+	return &domain.Token{
+		Token:        token,
+		RefreshToken: refreshToken,
+	}, nil
+}
+
 // ExtractTokenGoogle implements domain.UsersUseCase.
 func (u *UseCase) ExtractTokenGoogle(code string) (string, error) {
 	token, err := config.OauthConfGl.Exchange(context.TODO(), code)

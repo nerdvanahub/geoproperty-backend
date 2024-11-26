@@ -15,6 +15,7 @@ type Property[C string | space.Point, G string | space.Polygon] struct {
 	UserID          int64           `json:"user_id" gorm:"not null"`
 	User            Users           `json:"user" gorm:"foreignKey:UserID"`
 	Images          []PropertyImage `json:"images" gorm:"foreignKey:PropertyID"`
+	DeletedImage    []string        `json:"deleted_image" gorm:"-"`
 	Address         string          `json:"address" gorm:"not null;type:text"`
 	TitleAds        string          `json:"title_ads" gorm:"not null"`
 	TypeAds         string          `json:"type_ads" gorm:"not null"`
@@ -207,4 +208,5 @@ type PropertyUsecase interface {
 	Delete(uid string) error
 	GetByGeom(types string, point space.Point, polygon space.Polygon) (*GeoData, error)
 	GetPropertyByPrompt(query string) (*GeoData, error)
+	Update(property Property[space.Point, space.Polygon]) (*Property[space.Point, space.Polygon], error)
 }

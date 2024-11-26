@@ -55,12 +55,12 @@ func RegisterRoutes(c *Controllers, ctx *fiber.App) {
 	authRoutes.Get("/callback", c.AuthController.CallbackGoogle)
 	authRoutes.Get("/login/google", c.AuthController.LoginGoogle)
 	authRoutes.Post("/login", c.AuthController.Login)
+	authRoutes.Post("/refresh-token", c.AuthController.RefreshToken)
 	authRoutes.Post("/register", c.AuthController.Register)
 
 	// Register Search Routes
 	searchRoutes := v1.Group("/search")
-	searchRoutes.Get("/:keyword", c.SearchController.Search)
-	searchRoutes.Post("/all", c.SearchController.GetAll)
+	searchRoutes.Get("/:keyword?", c.SearchController.Search)
 
 	// Register Poi Routes
 	poiRoutes := v1.Group("/poi")
@@ -88,4 +88,5 @@ func RegisterRoutes(c *Controllers, ctx *fiber.App) {
 	propertyRoutes.Post("/", c.PropertyController.Insert)
 	propertyRoutes.Post("/own", c.PropertyController.GetOwn)
 	propertyRoutes.Delete("/:uid", c.PropertyController.Delete)
+	propertyRoutes.Put("/:uid", c.PropertyController.Update)
 }

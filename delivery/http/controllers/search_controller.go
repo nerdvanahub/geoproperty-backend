@@ -20,8 +20,14 @@ func NewSearchController(u domain.SearchUseCase) *SearchController {
 func (u *SearchController) Search(c *fiber.Ctx) error {
 	keyword := c.Params("keyword")
 
-	searches, err := u.SearchUseCase.Search(keyword)
+	if keyword == "" {
+		return c.Status(fiber.StatusBadRequest).JSON(domain.Response{
+			Status:  fiber.StatusBadRequest,
+			Message: "Invalid keyword",
+		})
+	}
 
+	searches, err := u.SearchUseCase.Search(keyword)
 	if err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(domain.Response{
 			Status:  fiber.StatusBadRequest,

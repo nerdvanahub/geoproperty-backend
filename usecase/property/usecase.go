@@ -17,6 +17,56 @@ type UseCase struct {
 	QueryAgentUseCase  query_agent.UseCase
 }
 
+// Update implements domain.PropertyUsecase.
+func (u *UseCase) Update(property domain.Property[space.Point, space.Polygon]) (*domain.Property[space.Point, space.Polygon], error) {
+	// Get Detail Property
+	detailProperty, err := u.FindDetail(property.UUID)
+	if err != nil {
+		return nil, err
+	}
+
+	property.ID = detailProperty.ID
+
+	// Replace Property Image
+	if len(property.Images) > 0 {
+		for i := range property.Images {
+			property.Images[i].PropertyID = detailProperty.ID
+		}
+	}
+
+	// Parse WKT
+	parsedWKTProperty, err := property.MapWKT(property)
+
+	if err != nil {
+		return nil, err
+	}
+
+	// Check Intersect
+	area, err := u.AreaUseCase.GetAreaByGeom(property.Geometry)
+
+	if err != nil {
+		return nil, err
+	}
+
+	parsedWKTProperty.Kecamatan = area.Kecamatan
+	parsedWKTProperty.Kelurahan = area.Kelurahan
+	parsedWKTProperty.Kota = area.Kota
+
+	// Update Property
+	newProperty, err := u.PropertyRepository.Update(*parsedWKTProperty)
+	if err != nil {
+		return nil, err
+	}
+
+	// Parse Geometry
+	result, err := (*newProperty).MapGeom(*newProperty)
+	if err != nil {
+		return nil, err
+	}
+
+	return result, nil
+}
+
 // GetPropertyByPrompt implements domain.PropertyUsecase.
 func (u *UseCase) GetPropertyByPrompt(query string) (*domain.GeoData, error) {
 	// Get Query

@@ -31,8 +31,15 @@ func (u *AuthController) Register(c *fiber.Ctx) error {
 		})
 	}
 
-	users, err := u.UsesUseCase.Register(&user)
+	// Validate Request Body
+	if err := utils.ValidateStruct(user); err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(domain.Response{
+			Status:  fiber.StatusBadRequest,
+			Message: "Invalid request body",
+		})
+	}
 
+	users, err := u.UsesUseCase.Register(&user)
 	if err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(domain.Response{
 			Status:  fiber.StatusBadRequest,
@@ -134,4 +141,42 @@ func (u *AuthController) CallbackGoogle(c *fiber.Ctx) error {
 	}
 
 	return c.Redirect("https://geoproperty.nerdvana-hub.com/auth?token="+token, fiber.StatusTemporaryRedirect)
+}
+
+// RefreshToken is a function to refresh token.
+func (u *AuthController) RefreshToken(c *fiber.Ctx) error {
+	type Token struct {
+		Token string `json:"refresh_token" validate:"required"`
+	}
+
+	var token Token
+
+	if err := c.BodyParser(&token); err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(domain.Response{
+			Status:  fiber.StatusBadRequest,
+			Message: err.Error(),
+		})
+	}
+
+	// Validate Request Body
+	if err := utils.ValidateStruct(token); err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(domain.Response{
+			Status:  fiber.StatusBadRequest,
+			Message: "Invalid request body",
+		})
+	}
+
+	newToken, err := u.UsesUseCase.RefreshToken(token.Token)
+	if err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(domain.Response{
+			Status:  fiber.StatusBadRequest,
+			Message: err.Error(),
+		})
+	}
+
+	return c.Status(fiber.StatusOK).JSON(domain.Response{
+		Status:  fiber.StatusOK,
+		Message: "success",
+		Data:    newToken,
+	})
 }
