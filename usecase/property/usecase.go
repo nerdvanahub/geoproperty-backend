@@ -200,7 +200,13 @@ func (u *UseCase) GetByGeom(types string, point space.Point, polygon space.Polyg
 
 // Delete implements domain.PropertyUsecase.
 func (u *UseCase) Delete(uid string) error {
-	if err := u.PropertyRepository.Delete(uid); err != nil {
+	// Check Property
+	property, err := u.FindDetail(uid)
+	if err != nil {
+		return err
+	}
+	// Delete Property
+	if err := u.PropertyRepository.Delete(int(property.ID)); err != nil {
 		return err
 	}
 

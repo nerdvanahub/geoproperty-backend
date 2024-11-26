@@ -184,7 +184,7 @@ func (*Property[C, G]) TableName() string {
 
 type PropertyImage struct {
 	ID         int64  `json:"id" gorm:"primaryKey"`
-	PropertyID int64  `json:"property_id" gorm:"not null;constraint:OnUpdate:CASCADE,OnDelete:CASCADE"`
+	PropertyID int64  `json:"property_id" gorm:"not null;constraint:OnUpdate:CASCADE,OnDelete:CASCADE;"`
 	Image      string `json:"image" gorm:"not null"`
 }
 
@@ -197,7 +197,7 @@ type PropertyRepository interface {
 	Find(param map[string]any) (*[]Property[string, string], error)
 	Update(property Property[string, string]) (*Property[string, string], error)
 	Generate(query string) ([]int, error)
-	Delete(uid string) error
+	Delete(id int) error
 	FinByPolygon(polygon string) (*[]Property[string, string], error)
 }
 

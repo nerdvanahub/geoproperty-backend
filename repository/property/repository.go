@@ -23,8 +23,8 @@ func (r *Repository) Generate(query string) ([]int, error) {
 }
 
 // Delete implements domain.PropertyRepository.
-func (r *Repository) Delete(uid string) error {
-	if err := r.DB.Where("uuid = ?", uid).Delete(&domain.Property[string, string]{}).Error; err != nil {
+func (r *Repository) Delete(id int) error {
+	if err := r.DB.Delete(&domain.Property[string, string]{}, id).Error; err != nil {
 		return err
 	}
 
