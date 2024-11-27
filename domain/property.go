@@ -2,6 +2,7 @@ package domain
 
 import (
 	"encoding/json"
+	"fmt"
 	"geoproperty_be/utils"
 
 	"github.com/google/uuid"
@@ -104,16 +105,20 @@ func (p *Property[C, G]) MapGeom(property Property[string, string]) (*Property[s
 
 func (p *Property[C, G]) MapWKT(property Property[space.Point, space.Polygon]) (*Property[string, string], error) {
 	centerPointEncoded, err := utils.DecodeGeomWKT(property.CenterPoint)
-
 	if err != nil {
 		return nil, err
 	}
+
+	// Set SRD
+	centerPointEncoded = fmt.Sprintf("SRID=4326;%s", centerPointEncoded)
 
 	geometryEncoded, err := utils.DecodeGeomWKT(property.Geometry)
-
 	if err != nil {
 		return nil, err
 	}
+
+	// Set SRD
+	geometryEncoded = fmt.Sprintf("SRID=4326;%s", geometryEncoded)
 
 	newProperty := Property[string, string]{
 		ID:              property.ID,

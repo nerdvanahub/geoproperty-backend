@@ -36,14 +36,12 @@ func (u *UseCase) Update(property domain.Property[space.Point, space.Polygon]) (
 
 	// Parse WKT
 	parsedWKTProperty, err := property.MapWKT(property)
-
 	if err != nil {
 		return nil, err
 	}
 
 	// Check Intersect
 	area, err := u.AreaUseCase.GetAreaByGeom(property.Geometry)
-
 	if err != nil {
 		return nil, err
 	}
