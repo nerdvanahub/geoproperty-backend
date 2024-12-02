@@ -14,7 +14,7 @@ type Repository struct {
 func (r *Repository) GetAreaByGeom(geom string) (*domain.Area, error) {
 	var area *domain.Area
 
-	if err := r.DB.Model(&domain.Area{}).Where("ST_Contains(geom, ST_GeomFromText(?, 4326))", geom).First(&area).Error; err != nil {
+	if err := r.DB.Model(&domain.Area{}).Where("ST_Intersects(geom, ST_GeomFromText(?, 4326))", geom).First(&area).Error; err != nil {
 		return nil, err
 	}
 
