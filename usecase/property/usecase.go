@@ -2,6 +2,7 @@ package property
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"geoproperty_be/domain"
 	"geoproperty_be/utils"
@@ -259,6 +260,10 @@ func (u *UseCase) FindDetail(uid string) (*domain.Property[space.Point, space.Po
 
 	if err != nil {
 		return nil, err
+	}
+
+	if len(*property) == 0 {
+		return nil, errors.New("property not found")
 	}
 
 	// Maping Data
