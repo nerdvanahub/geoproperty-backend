@@ -2,17 +2,52 @@ name: Docker Image CI
 
 on:
   push:
-    branches: [ "master" ]
+    branches: ["master"]
   pull_request:
-    branches: [ "master" ]
+    branches: ["master"]
 
 jobs:
-
   build:
-
     runs-on: ubuntu-latest
-
     steps:
-    - uses: actions/checkout@v4
-    - name: Build the Docker image
-      run: docker build . --file Dockerfile --tag my-image-name:$(date +%s)
+      - uses: actions/checkout@v2
+
+      - name: Set up Go
+        uses: actions/setup-go@v2
+        with:
+          go-version: 1.19
+      - name: Install Package
+        run: go install
+
+      - name: Build
+        run: go build -v ./...
+
+      - name: Login to DockerHub
+        uses: docker/login-action@v1
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Build and push
+        id: docker_build
+        uses: docker/build-push-action@v2
+        with:
+          push: true
+          tags: asnurramdhani12/geoproperty-api:production
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Deploy Image Using ssh
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USERNAME }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          port: ${{ secrets.SSH_PORT }}
+          script: |
+            docker pull asnurramdhani12/geoproperty-api:production
+            docker container stop geoproperty-api
+            docker rm geoproperty-api
+            docker run -d -p 3000:3000 --name geoproperty-api --network geoprioperty-network -e DB_NAME=${{ secrets.DB_NAME }} -e DB_USERNAME=${{ secrets.DB_USERNAME }} -e DB_PASSWORD=${{ secrets.DB_PASSWORD }} -e DB_HOST=${{ secrets.DB_HOST }} -e DB_PORT=${{ secrets.DB_PORT }} -e MINIO_ENDPOINT=${{ secrets.MINIO_ENDPOINT }} -e MINIOUSER=${{ secrets.MINIOUSER }} -e MINIOPASSWORD=${{ secrets.MINIOPASSWORD }} -e BUCKETNAME=${{ secrets.BUCKETNAME }} -e JWT_SECRET=${{ secrets.JWT_SECRET }} --restart always asnurramdhani12/geoproperty-api:production
