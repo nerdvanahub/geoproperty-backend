@@ -13,7 +13,7 @@ func GPTService() *grpc.ClientConn {
 
 	conn, err := grpc.Dial(host, grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if err != nil {
-		log.Fatal("could not connect to ", host, err)
+		log.Println("could not connect to ", host, err)
 	}
 
 	return conn
