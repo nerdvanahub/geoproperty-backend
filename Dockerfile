@@ -1,4 +1,4 @@
-FROM golang:1.21-alpine 
+FROM golang:1.21-alpine AS builder
 
 # Set the Current Working Directory inside the container
 WORKDIR /app
@@ -16,5 +16,12 @@ RUN go build -o geoproperty .
 EXPOSE 3000
 
 # Command to run the executable
+
+FROM busybox:stable
+
+WORKDIR /app
+
+COPY --from=builder /app/geoproperty .
+
 CMD ["./geoproperty", "server", "-i", "0.0.0.0", "-p", "3000"]
 
