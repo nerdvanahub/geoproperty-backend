@@ -1,6 +1,7 @@
 package area
 
 import (
+	"errors"
 	"geoproperty_be/domain"
 
 	"gorm.io/gorm"
@@ -27,11 +28,15 @@ func (r *Repository) Overlaps(geom string) (bool, error) {
 	var streets *domain.Streets
 
 	if err := r.DB.Table("property").Where("ST_Intersects(geometry, ST_GeomFromText(?, 4326))", geom).First(&area).Error; err != nil {
-		return false, err
+		if !errors.Is(err, gorm.ErrRecordNotFound) {
+			return false, err
+		}
 	}
 
 	if err := r.DB.Table("streets").Where("ST_Intersects(geom, ST_GeomFromText(?, 4326))", geom).First(&streets).Error; err != nil {
-		return false, err
+		if !errors.Is(err, gorm.ErrRecordNotFound) {
+			return false, err
+		}
 	}
 
 	return area != nil || streets != nil, nil
