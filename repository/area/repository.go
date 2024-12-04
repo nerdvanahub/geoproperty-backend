@@ -47,3 +47,5 @@ func NewRepository(db *gorm.DB) domain.AreaRepository {
 		DB: db,
 	}
 }
+
+
