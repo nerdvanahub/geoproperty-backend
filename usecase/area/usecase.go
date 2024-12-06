@@ -3,6 +3,7 @@ package area
 import (
 	"geoproperty_be/domain"
 	"geoproperty_be/utils"
+	"log"
 
 	"errors"
 
@@ -45,6 +46,8 @@ func (u *UseCase) Overlaps(geom space.Polygon) (bool, error) {
 		}
 		return false, err
 	}
+
+	log.Println("Overlaps: ", overlaps)
 
 	return overlaps, nil
 }
