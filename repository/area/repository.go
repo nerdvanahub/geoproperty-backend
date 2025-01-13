@@ -39,7 +39,7 @@ func (r *Repository) Overlaps(geom string) (bool, error) {
 		}
 	}
 
-	return area != nil || streets != nil, nil
+	return area.ID != 0 || streets.ID != 0, nil
 }
 
 func NewRepository(db *gorm.DB) domain.AreaRepository {
@@ -47,5 +47,3 @@ func NewRepository(db *gorm.DB) domain.AreaRepository {
 		DB: db,
 	}
 }
-
-
