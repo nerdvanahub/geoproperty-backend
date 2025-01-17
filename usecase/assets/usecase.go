@@ -2,6 +2,7 @@ package assets
 
 import (
 	"context"
+	"errors"
 	"geoproperty_be/config"
 	"geoproperty_be/domain"
 	"mime/multipart"
@@ -49,6 +50,16 @@ func (s *ServiceAssets) UploadMultipleAsset(ctx context.Context, fh []*multipart
 
 		contentType := file.Header["Content-Type"][0]
 		fileSize := file.Size
+
+		// Validate File Size >= 1MB
+		if fileSize >= 1048576 {
+			return errors.New("File size exceeds")
+		}
+
+		// Validate File Type
+		if contentType != "image/jpeg" && contentType != "image/png" && contentType != "image/jpg" {
+			return errors.New("Invalid file type")
+		}
 
 		_, err = s.minioClient.PutObject(ctx, config.MinioBucketName, file.Filename, buf, fileSize, minio.PutObjectOptions{ContentType: contentType})
 		if err != nil {

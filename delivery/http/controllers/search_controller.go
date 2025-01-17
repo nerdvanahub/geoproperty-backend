@@ -36,8 +36,8 @@ func (u *SearchController) Search(c *fiber.Ctx) error {
 	}
 
 	if len(*searches) == 0 {
-		return c.Status(fiber.StatusNotFound).JSON(domain.Response{
-			Status:  fiber.StatusNotFound,
+		return c.Status(fiber.StatusOK).JSON(domain.Response{
+			Status:  fiber.StatusOK,
 			Message: "Not Found",
 		})
 	}

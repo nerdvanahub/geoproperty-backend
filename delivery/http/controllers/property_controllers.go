@@ -36,13 +36,31 @@ func (p *PropertyController) Insert(ctx *fiber.Ctx) error {
 	}
 
 	context := context.Background()
+
+	// Check file
 	files := form.File["files"]
+
+	if len(files) == 0 {
+		return ctx.Status(fiber.StatusBadRequest).JSON(domain.Response{
+			Status:  fiber.StatusBadRequest,
+			Message: "file is required",
+		})
+	}
+
 	err = p.AssetUseCase.UploadMultipleAsset(context, files)
 	if err != nil {
-		return ctx.Status(fiber.StatusInternalServerError).JSON(domain.Response{
-			Status:  fiber.StatusInternalServerError,
-			Message: err.Error(),
-		})
+		switch err.Error() {
+		case "File size exceeds", "Invalid file type":
+			return ctx.Status(fiber.StatusBadRequest).JSON(domain.Response{
+				Status:  fiber.StatusBadRequest,
+				Message: err.Error(),
+			})
+		default:
+			return ctx.Status(fiber.StatusInternalServerError).JSON(domain.Response{
+				Status:  fiber.StatusInternalServerError,
+				Message: err.Error(),
+			})
+		}
 	}
 
 	var property domain.Property[space.Point, space.Polygon]
