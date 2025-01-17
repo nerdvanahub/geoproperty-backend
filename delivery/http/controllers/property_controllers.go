@@ -45,6 +45,11 @@ func (p *PropertyController) Insert(ctx *fiber.Ctx) error {
 			Status:  fiber.StatusBadRequest,
 			Message: "file is required",
 		})
+	} else if len(files) > 5 {
+		return ctx.Status(fiber.StatusBadRequest).JSON(domain.Response{
+			Status:  fiber.StatusBadRequest,
+			Message: "file must be less than 5",
+		})
 	}
 
 	err = p.AssetUseCase.UploadMultipleAsset(context, files)
